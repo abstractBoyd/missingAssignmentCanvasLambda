@@ -298,7 +298,6 @@ def get_score(course_id: str, assignment_id: int, user_id: int):
         return 0
     if 'workflow_state' in submission and submission['workflow_state'] == 'unsubmitted':
         return 0
-    #this is kind of goofy, but we just want to return something high so we know to skip it if it hasn't been graded
     if not 'score' in submission or submission['score'] == None:
         return '"grading"'
     return submission['score']
@@ -340,9 +339,7 @@ def get_missing_assignments(courses_info, observed_user_id):
             "include[]": "submission"
         }
         assignments = _canvas_get(f"/api/v1/users/{observed_user_id}/courses/{course_info['id']}/assignments", params=params)
-        print(assignments)
-        # print(f"Found {assignments} assignments data for user {observed_user_id}")
-        # submissions = _canvas_get(f"/api/v1/courses/{course_id}/assignments/:assignment_id/submissions", params=params)
+        print(f"Found {assignments} assignments data for user {observed_user_id}")
         results[course_info["name"]] = [
             {
                 "id": assignment["id"], 
@@ -352,8 +349,6 @@ def get_missing_assignments(courses_info, observed_user_id):
                 'points_possible': assignment["points_possible"],
                 'submitted': assignment["has_submitted_submissions"],
                 'url': assignment["html_url"],
-                # 'assignment': assignment,
-                # 'submission': get_submission(course_info["id"], assignment["id"], observed_user_id)
             }
             for assignment in assignments
             if (( "due_at" in assignment and 
@@ -362,9 +357,7 @@ def get_missing_assignments(courses_info, observed_user_id):
                 _iso_to_dt(assignment["due_at"]).timestamp() > _iso_to_dt(CUTOFF_DATE).timestamp()) and
                 ("points_possible" in assignment and
                 assignment["points_possible"] is not None and
-                assignment["points_possible"] > 0)) # and
-                #this filtering needs to be done in the UI
-                # (assignment["points_possible"] / 2) >= get_score(course_info["id"], assignment["id"], observed_user_id)))
+                assignment["points_possible"] > 0))
         ]
     return results
 
