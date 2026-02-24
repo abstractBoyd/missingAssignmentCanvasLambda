@@ -169,14 +169,6 @@ HTML = r"""
         // 3) Load assignments for each course concurrently
         await Promise.all(courseBoxes.map(async ({course, box}) => {
           try {
-//            const assignments = await callApi({
-//              data_type: "assignments",
-//              observed_user_id: stu.id,
-//              course_id: course.id
-//              // If you also support cutoff as a query param in your lambda, add:
-//              // cutoff: "2026-01-30T04:59:59Z"
-//            });
-//            renderAssignments(box, assignments);
             const assignments = await callApi({
               data_type: "assignments",
               observed_user_id: stu.id,
