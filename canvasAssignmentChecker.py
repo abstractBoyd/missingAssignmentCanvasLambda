@@ -362,11 +362,6 @@ def get_missing_assignments(courses_info, observed_user_id):
     return results
 
 def lambda_handler(event, context):
-    """
-    Optional event overrides:
-      - event["observed_user_id"]
-      - event["max_items"]
-    """
     params = event.get('queryStringParameters', {})
     data_type = params.get('data_type', 'html')
     results = None
