@@ -48,6 +48,19 @@ HTML = r"""
   const statusEl = document.getElementById("status");
   const outEl = document.getElementById("out");
 
+  const NOTES_KEY = "assignment_notes_v1";
+
+  function loadNotes() {
+    try { return JSON.parse(localStorage.getItem(NOTES_KEY) || "{}"); }
+    catch { return {}; }
+  }
+  function saveNotes(notes) {
+    localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+  }
+  function noteKey(studentId, courseId, assignmentId) {
+    return `${studentId}:${courseId}:${assignmentId}`;
+  }
+
   function setStatus(msg) {
     statusEl.innerHTML = msg ? `<span class="spinner"></span>${msg}` : "";
   }
@@ -89,24 +102,56 @@ HTML = r"""
     return box;
   }
 
-  function renderAssignments(courseDiv, assignments) {
+  function renderAssignments(courseDiv, assignments, studentId, courseId) {
+    // set these for use in template
+    courseDiv.dataset.studentId = studentId;
+    courseDiv.dataset.courseId = courseId;
     if (!assignments || assignments.length === 0) {
       courseDiv.querySelector(".muted").textContent = "No matching assignments.";
       return;
     }
 
-    const items = assignments.map(a => {
-      const name = escapeHtml(a.name || "Untitled");
-      const url = escapeHtml(a.html_url || a.url || "#");
-      const due = escapeHtml(a.due_at || a.due || "");
-      const pts = escapeHtml(a.points_possible ?? "");
-      const scr = escapeHtml(a.score ?? "");
-      return `<li><a href="${url}" target="_blank" rel="noopener">${name}</a>
-              <span class="muted"> — Due: ${due} — Points: ${scr}/${pts}</span>
-              </li>`;
-    }).join("");
+  const notes = loadNotes();
+
+  const items = assignments.map(a => {
+    const name = escapeHtml(a.name || "Untitled");
+    const url = escapeHtml(a.html_url || a.url || "#");
+    const due = escapeHtml(a.due_at || a.due || "");
+    const pts = escapeHtml(a.points_possible ?? "");
+    const scr = escapeHtml(a.score ?? "");
+
+    // You need these passed into renderAssignments: studentId + courseId
+    const k = noteKey(studentId, courseId, a.id);
+    const existing = escapeHtml(notes[k] || "");
+
+    return `<li>
+      <div>
+        <a href="${url}" target="_blank" rel="noopener">${name}</a>
+        <span class="muted"> — Due: ${due} — Points: ${scr}/${pts}</span>
+      </div>
+      <div>
+        <input
+          type="text"
+          data-note-key="${escapeHtml(k)}"
+          value="${existing}"
+          placeholder="Add note (local only to this browser)…"
+          style="width: min(700px, 95%); padding: 4px; margin-top: 4px;"
+        />
+      </div>
+    </li>`;
+  }).join("");
 
     courseDiv.innerHTML = `<h3>${courseDiv.querySelector("h3").innerText}</h3><ul>${items}</ul>`;
+
+    courseDiv.addEventListener("input", (e) => {
+      const t = e.target;
+      if (t && t.matches('input[data-note-key]')) {
+        const k = t.getAttribute("data-note-key");
+        const notes = loadNotes();
+        notes[k] = t.value;
+        saveNotes(notes);
+      }
+    }, { passive: true });
   }
 
   async function getScore(studentId, courseId, assignmentId) {
@@ -202,7 +247,7 @@ HTML = r"""
             // remove nulls
             const finalAssignments = filtered.filter(Boolean);
 
-            renderAssignments(box, finalAssignments);
+            renderAssignments(box, finalAssignments, stu.id, course.id);
 
 
           } catch (e) {
