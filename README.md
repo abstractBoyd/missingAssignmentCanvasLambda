@@ -1,7 +1,10 @@
 # missingAssignmentCanvasLambda
 A single-file lambda that is a web service to get all the missing assignments for one or more students using Canvas
 
-The file, once deployed to an AWS Lambda instance, and set up to have a Function URL, serves up HTML+JS as a frontend and has a REST backend.
+The file, once deployed to an AWS Lambda instance, and set up to have a Function URL, serves up HTML+JS as a frontend and has a REST-ish backend.
+
+Also, there is the ability to add notes to assignments.  This feature only stores the notes in the browser that actually created the note, no data is stored on a server, and nothing is transmitted back to the server.
+To be clear, a note entered on your laptop won't show up on your phone - or vice versa.
 
 The Lambda needs these three environment variables defined in the configuration tab:
 ```
