@@ -192,7 +192,7 @@ HTML = r"""
 
               const halfPoints = (a.points_possible || 0) * """ + CUTOFF_SCORE + """;
 
-              if (score >= halfPoints) {
+              if (score > halfPoints) {
                 return null; // filter out
               }
 
