@@ -2,7 +2,7 @@ import os
 import json
 import urllib.request
 import urllib.parse
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 API_ONE = "/api/v1"
 COURSES_URL = API_ONE + "/courses"
@@ -14,6 +14,8 @@ OBSERVED_USER_ID = os.environ.get("OBSERVED_USER_ID")  # optional: set to pick a
 CUTOFF_DATE = os.environ.get("CUTOFF_DATE", "")
 # Lock CORS down to your site; use "*" only for quick testing.
 ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
+DAYS_UNTIL_DUE = int(os.environ.get("DAYS_UNTIL_DUE", "0"))
+CUTOFF_SCORE = str(float(os.environ.get("CUTOFF_SCORE", "50"))/100)
 
 HTML = r"""
 <!doctype html>
@@ -188,7 +190,7 @@ HTML = r"""
                 return null;
               }
 
-              const halfPoints = (a.points_possible || 0) / 2;
+              const halfPoints = (a.points_possible || 0) * """ + CUTOFF_SCORE + """;
 
               if (score >= halfPoints) {
                 return null; // filter out
@@ -353,7 +355,7 @@ def get_missing_assignments(courses_info, observed_user_id):
             for assignment in assignments
             if (( "due_at" in assignment and 
                 _iso_to_dt(assignment["due_at"]) != None and
-                _iso_to_dt(assignment["due_at"]).timestamp() < datetime.now(timezone.utc).timestamp() and
+                _iso_to_dt(assignment["due_at"]).timestamp() < (datetime.now(timezone.utc) + timedelta(days=DAYS_UNTIL_DUE)).timestamp() and
                 _iso_to_dt(assignment["due_at"]).timestamp() > _iso_to_dt(CUTOFF_DATE).timestamp()) and
                 ("points_possible" in assignment and
                 assignment["points_possible"] is not None and
@@ -399,4 +401,3 @@ def lambda_handler(event, context):
         },
         'body': results,
     }
-
