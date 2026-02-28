@@ -9,6 +9,11 @@ CANVAS_BASE_URL = https://your-school-specific-host.instructure.com
 CANVAS_TOKEN = 57???????your-personal-canvas-token???????????Za
 CUTOFF_DATE = 2026-01-25T04:59:59Z
 ```
+These environment variables are optional:
+```
+CUTOFF_SCORE = 50
+DAYS_UNTIL_DUE = 0
+```
 
 The CANVAS_BASE_URL will be specific to your student's school
 
@@ -26,3 +31,7 @@ The CANVAS_TOKEN can be generated from the parent Canvas page:
  7. set the expiration date sufficiently in the future, or never expire
  8. copy/save it somewhere
  9. add it to the environment for the lambda
+
+The CUTOFF_SCORE variable doesn't list any assignments above a certain score, it defaults to 50
+
+The DAYS_UNTIL_DUE variable lets you specify whether you want to be able to see assignments that are already past due (defaults to 0), or assignments that will be due in X number of days
